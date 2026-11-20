@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Mouse Bridge · 장치 설정</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <span class="brand">Mouse Bridge</span>
+      <span id="connection" class="connection">연결 안 됨</span>
+    </div>
+  </header>
+  <main class="shell">
+    <div class="intro">
+      <h1>장치 설정</h1>
+      <button id="connect" class="primary" type="button" disabled>장치 연결</button>
+    </div>
+
+    <section class="device" aria-label="연결 장치">
+      <div>
+        <p class="subtle">USB 장치</p>
+        <p id="device-name" class="device-name">선택한 장치 없음</p>
+      </div>
+      <span id="device-id" class="device-id" hidden></span>
+    </section>
+
+    <section class="profiles" aria-label="프로필 관리">
+      <label for="profile">활성 프로필</label>
+      <select id="profile" aria-describedby="profile-note" disabled><option>장치 연결 필요</option></select>
+      <div class="buttons">
+        <button id="create-profile" type="button" disabled>현재 프로필 복제</button>
+        <button id="delete-profile" type="button" disabled>삭제</button>
+      </div>
+      <p id="profile-note" class="subtle">프로필별로 설정을 저장할 수 있습니다.</p>
+    </section>
+
+    <form id="settings" class="layout" autocomplete="off">
+      <fieldset id="motion" class="panel motion" disabled>
+        <legend>이동 및 스크롤</legend>
+        <div class="sensitivity">
+          <div class="sensitivity-label">
+            <label for="sensitivity">커서 감도</label>
+            <output id="sensitivity-value" for="sensitivity">100%</output>
+          </div>
+          <input id="sensitivity" type="range" min="25" max="400" step="1" value="100">
+          <div class="range-labels" aria-hidden="true"><span>25%</span><span>400%</span></div>
+        </div>
+        <label class="switch-row">
+          <span>X축 반전 <small>좌우 이동</small></span>
+          <input id="invert-x" type="checkbox" role="switch">
+        </label>
+        <label class="switch-row">
+          <span>Y축 반전 <small>상하 이동</small></span>
+          <input id="invert-y" type="checkbox" role="switch">
+        </label>
+        <label class="switch-row">
+          <span>스크롤 반전 <small>휠 방향</small></span>
+          <input id="invert-scroll" type="checkbox" role="switch">
+        </label>
+      </fieldset>
+
+      <fieldset id="mapping" class="panel" disabled>
+        <legend>버튼 리맵핑</legend>
+        <div id="button-mappings" class="mappings"></div>
+      </fieldset>
+    </form>
+
+    <footer class="actions">
+      <p id="status" role="status">장치를 연결하면 현재 설정을 불러옵니다.</p>
+      <div class="buttons">
+        <button id="read" type="button" disabled>다시 읽기</button>
+        <button id="defaults" type="button" disabled>기본값 복원</button>
+        <button id="save" class="primary" type="button" disabled>EEPROM 저장</button>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

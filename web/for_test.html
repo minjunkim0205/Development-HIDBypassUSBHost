@@ -1,0 +1,84 @@
+﻿<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mouse Bridge WebHID 확인</title>
+<main>
+  <h1>Mouse Bridge WebHID 확인</h1>
+  <button id="connect" type="button">장치 연결</button>
+  <button id="read" type="button" disabled>설정 읽기</button>
+  <button id="invert" type="button" disabled>X축 반전 전환</button>
+  <button id="save" type="button" disabled>EEPROM 저장</button>
+  <button id="defaults" type="button" disabled>기본값 적용</button>
+  <p id="status" role="status">장치를 연결해 주세요.</p>
+  <p id="settings"></p>
+</main>
+<script type="module">
+  import { MouseBridgeConnection } from './web/hid.js';
+
+  const connect = document.querySelector('#connect');
+  const read = document.querySelector('#read');
+  const invert = document.querySelector('#invert');
+  const save = document.querySelector('#save');
+  const defaults = document.querySelector('#defaults');
+  const status = document.querySelector('#status');
+  const settings = document.querySelector('#settings');
+  const actions = [read, invert, save, defaults];
+  let bridge = null;
+  let busy = false;
+
+  function updateButtons() {
+    connect.disabled = busy || Boolean(bridge?.device.opened) || !navigator.hid;
+    for (const button of actions) button.disabled = busy || !bridge?.device.opened;
+  }
+
+  async function run(action) {
+    busy = true;
+    updateButtons();
+    try {
+      await action();
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      busy = false;
+      updateButtons();
+    }
+  }
+
+  function showConfig(config, message) {
+    settings.textContent = `X축 반전 ${config.invertX ? '켜짐' : '꺼짐'} · 감도 ${config.sensitivity}%`;
+    status.textContent = message;
+  }
+
+  connect.addEventListener('click', () => run(async () => {
+    bridge = await MouseBridgeConnection.connect();
+    if (bridge) showConfig(await bridge.read(), '설정 인터페이스 연결 및 읽기 완료');
+  }));
+  read.addEventListener('click', () => run(async () => {
+    showConfig(await bridge.read(), '장치의 현재 설정을 읽었습니다.');
+  }));
+  invert.addEventListener('click', () => run(async () => {
+    const config = await bridge.read();
+    config.invertX = !config.invertX;
+    await bridge.write(config);
+    showConfig(await bridge.read(), 'X축 반전을 변경하고 장치에서 다시 읽었습니다.');
+  }));
+  save.addEventListener('click', () => run(async () => {
+    showConfig(await bridge.save(), '현재 설정을 EEPROM에 저장했습니다.');
+  }));
+  defaults.addEventListener('click', () => run(async () => {
+    showConfig(await bridge.restoreDefaults(), '기본값을 RAM에 적용했습니다.');
+  }));
+
+  navigator.hid?.addEventListener('disconnect', event => {
+    if (event.device !== bridge?.device) return;
+    bridge = null;
+    settings.textContent = '';
+    status.textContent = '장치 연결이 끊겼습니다.';
+    updateButtons();
+  });
+
+  if (!navigator.hid) status.textContent = 'Chrome 또는 Edge에서 localhost 주소로 열어 주세요.';
+  updateButtons();
+</script>
+</html>
